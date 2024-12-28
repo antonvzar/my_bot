@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 router = Router()
 
-cart = []  # Используем общую корзину
+cart = []
 
 def back_to_main_button():
     builder = InlineKeyboardBuilder()
@@ -18,13 +18,13 @@ async def place_order(callback: CallbackQuery):
             "Thank you for your order! We will contact you shortly.",
             reply_markup=back_to_main_button()
         )
-        cart.clear()  # Очищаем корзину после оформления заказа
+        cart.clear()
     else:
         await callback.message.edit_text(
             "Your cart is empty. Please add items before placing an order.",
             reply_markup=back_to_main_button()
         )
 
-# Функция для регистрации обработчиков
+
 def register_order_handlers(dp):
     dp.include_router(router)

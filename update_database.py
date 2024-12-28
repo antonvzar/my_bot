@@ -1,8 +1,8 @@
 from firebase_config import db
 
-def update_database():
+def add_additional_series():
     try:
-        # Получаем все категории
+        # Fetch existing categories and their items
         ref = db.reference("categories")
         categories = ref.get()
 
@@ -10,31 +10,46 @@ def update_database():
             print("No categories found in the database.")
             return
 
+        # Predefined series for each brand
+        additional_series = {
+            "Ray-Ban": ["Wayfarer", "Aviator", "Clubmaster", "Round Metal", "Erika"],
+            "Fossil": ["Minimalist Watch", "Grant Watch", "Chronograph", "Hybrid Smartwatch", "Georgia Wallet"],
+            "Timex": ["Expedition Scout", "Ironman Classic", "Weekender", "Marlin", "Navi Harbor"],
+            "Casio": ["G-Shock", "Pro Trek", "Edifice", "Data Bank", "Classic Quartz"],
+            "North": ["Thermoball Vest", "Gotham Jacket", "Arctic Parka", "Aconcagua Vest", "Horizon Jacket"],
+            "Patagonia": ["Nano Puff", "Micro Puff Hoody", "Down Sweater Vest", "Better Sweater", "Rainshadow Jacket"],
+            "Columbia": ["Powder Lite", "Frost Fighter", "Delta Ridge", "Voodoo Falls", "Glennaker Lake"],
+            "Levi's": ["711 Skinny", "720 High Rise", "Ribcage Straight", "Vintage Fit", "Wedgie Icon"],
+            "Wrangler": ["Retro Slim Fit", "Cowboy Cut", "Relaxed Fit", "Riggs Workwear", "Bootcut Jean"],
+            "Lee": ["Extreme Motion", "Relaxed Fit", "Slim Straight", "Modern Bootcut", "Performance Series"],
+            "Uniqlo": ["Ultra Stretch Skinny", "U Crew Neck Tee", "Supima Cotton Shirt", "Flannel Check Shirt", "Heattech Turtleneck"],
+            "Nike": ["Metcon 7", "ZoomX Vaporfly", "Blazer Mid", "React Infinity Run", "Court Legacy"],
+            "Puma": ["Rider FV", "Basket Classic", "Tazon 6", "Ignite Limitless", "Cell Surin"],
+            "Reebok": ["Nano X2", "Classic Leather", "Floatride Energy", "Club C Revenge", "Zig Kinetica"],
+            "Adidas": ["Gazelle", "Solar Glide", "Ozweego", "Terrex Free Hiker", "Copa Mundial"],
+            "Asics": ["Gel-Kayano", "Gel-Nimbus", "Gel-Cumulus", "GlideRide", "Noosa Tri"]
+        }
+
         for category, items in categories.items():
             print(f"Processing category: {category}")
+
             for item_id, item_data in items.items():
-                # Проверяем наличие поля 'name'
-                if "name" in item_data:
-                    name = item_data["name"]
-                    # Разделяем 'name' на 'brand' и 'series'
-                    parts = name.split(" ", 1)  # Разделяем по первому пробелу
-                    brand = parts[0]
-                    series = parts[1] if len(parts) > 1 else "Unknown"
+                brand = item_data.get("brand")
+                if brand in additional_series:
+                    for series in additional_series[brand]:
+                        # Generate unique item ID
+                        new_item_id = f"item_{hash(series) % 100000}"
 
-                    # Обновляем данные
-                    ref.child(category).child(item_id).update({
-                        "brand": brand,
-                        "series": series
-                    })
+                        # Add the new item
+                        ref.child(category).child(new_item_id).set({
+                            "brand": brand,
+                            "series": series,
+                            "price": round(50 + (hash(series) % 150), 2)  # Random price between $50 and $200
+                        })
+                        print(f"Added series '{series}' for brand '{brand}' in category '{category}'.")
 
-                    # Удаляем старое поле 'name'
-                    ref.child(category).child(item_id).child("name").delete()
-
-                    print(f"Updated item {item_id}: brand={brand}, series={series}")
-                else:
-                    print(f"Item {item_id} in category {category} does not have a 'name' field.")
     except Exception as e:
         print(f"Error updating database: {e}")
 
-if __name__ == "__main__":
-    update_database()
+# Execute the function to update the database
+add_additional_series()
